@@ -1,4 +1,4 @@
-define verdi::swap (
+define docker_base::swap (
   $ensure   = 'present',
   $swapfile = $name,
   $swapsize = $::memorysize_mb
