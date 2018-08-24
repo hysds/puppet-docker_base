@@ -97,6 +97,20 @@ class docker_base {
 
 
   #####################################################
+  # install .bash_profile
+  #####################################################
+
+  file { "/home/$user/.bash_profile":
+    ensure  => present,
+    content => template('docker_base/bash_profile'),
+    owner   => $user,
+    group   => $group,
+    mode    => 0644,
+    require => User[$user],
+  }
+
+
+  #####################################################
   # install packages
   #####################################################
 
