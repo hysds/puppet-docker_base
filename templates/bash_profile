@@ -9,3 +9,4 @@ fi
 umask 0022
 export LD_LIBRARY_PATH=/usr/lib:/usr/lib64:/usr/local/lib:$LD_LIBRARY_PATH
 export GIT_SSL_NO_VERIFY=true
+export FACTER_ipaddress=$(ifconfig $(route | awk '/default/{print $NF}') | grep 'inet ' | sed 's/addr://' | awk '{print $2}')
