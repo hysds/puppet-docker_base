@@ -219,11 +219,22 @@ class docker_base {
   }
 
 
+  file { "/etc/systemd/system/docker-ephemeral-lvm.d/beefed-autoindex-open_in_new_win.tbz2":
+    ensure  => file,
+    mode    => 0644,
+    source => 'puppet:///modules/docker_base/beefed-autoindex-open_in_new_win.tbz2',
+    require => File['/etc/systemd/system/docker-ephemeral-lvm.d'],
+  }
+
+
   file { '/etc/systemd/system/docker-ephemeral-lvm.service':
     ensure  => present,
     mode    => 0644,
     content => template('docker_base/docker-ephemeral-lvm.service'),
-    require => File['/etc/systemd/system/docker-ephemeral-lvm.d/docker-ephemeral-lvm.sh'],
+    require => [
+                File['/etc/systemd/system/docker-ephemeral-lvm.d/docker-ephemeral-lvm.sh'],
+                File['/etc/systemd/system/docker-ephemeral-lvm.d/beefed-autoindex-open_in_new_win.tbz2'],
+               ],
     notify  => Exec['daemon-reload'],
   }
 
