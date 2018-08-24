@@ -137,6 +137,37 @@ class docker_base {
 
 
   #####################################################
+  # install docker-compose
+  #####################################################
+
+  file { '/usr/local/bin':
+    ensure  => directory,
+    mode    => 0755,
+  }
+
+
+  file { "/usr/local/bin/docker-compose":
+    ensure  => file,
+    mode    => 0755,
+    source => 'puppet:///modules/docker_base/docker-compose',
+    require => [
+        File['/usr/local/bin'],
+    ],
+  }
+
+
+  #####################################################
+  # systemd daemon reload
+  #####################################################
+
+  exec { "daemon-reload":
+    path        => ["/sbin", "/bin", "/usr/bin"],
+    command     => "systemctl daemon-reload",
+    refreshonly => true,
+  }
+
+  
+  #####################################################
   # link vim
   #####################################################
   update_alternatives { 'vi':
@@ -171,6 +202,51 @@ class docker_base {
 
 
   #####################################################
+  # docker-ephemeral-lvm service
+  #####################################################
+
+  file { '/etc/systemd/system/docker-ephemeral-lvm.d':
+    ensure  => directory,
+    mode    => 0755,
+  }
+
+
+  file { '/etc/systemd/system/docker-ephemeral-lvm.d/docker-ephemeral-lvm.sh':
+    ensure  => present,
+    mode    => 0755,
+    content => template('docker_base/docker-ephemeral-lvm.sh'),
+    require => File['/etc/systemd/system/docker-ephemeral-lvm.d'],
+  }
+
+
+  file { '/etc/systemd/system/docker-ephemeral-lvm.service':
+    ensure  => present,
+    mode    => 0644,
+    content => template('docker_base/docker-ephemeral-lvm.service'),
+    require => File['/etc/systemd/system/docker-ephemeral-lvm.d/docker-ephemeral-lvm.sh'],
+    notify  => Exec['daemon-reload'],
+  }
+
+
+  service { 'dm-event':
+    ensure  => running,
+    enable  => true,
+    require => Exec['daemon-reload'],
+  }
+
+
+  service { 'docker-ephemeral-lvm':
+    ensure  => stopped,
+    enable  => true,
+    require => [
+                Service['dm-event'],
+                File['/etc/systemd/system/docker-ephemeral-lvm.service'],
+                Exec['daemon-reload'],
+               ],
+  }
+
+
+  #####################################################
   # start docker service
   #####################################################
 
@@ -181,6 +257,7 @@ class docker_base {
     hasstatus  => true,
     require    => [
                    Package['docker-ce'],
+                   Service['docker-ephemeral-lvm'],
                   ],
   }
 
