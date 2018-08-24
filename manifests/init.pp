@@ -127,6 +127,7 @@ class docker_base {
     'python': ensure => present;
     'python-devel': ensure => present;
     'python-virtualenv': ensure => present;
+    'bzip2': ensure => installed;
     'pbzip2': ensure => installed;
     'pigz': ensure => installed;
     'docker-ce': ensure => installed;
